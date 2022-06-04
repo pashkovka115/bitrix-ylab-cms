@@ -43,6 +43,13 @@ $aMenuLinks = Array(
 		"\$USER->IsAuthorized()" 
 	),
 	Array(
+		"Урок 2", 
+		"/lesson2/", 
+		Array(), 
+		Array(), 
+		"" 
+	),
+	Array(
 		"Д/З 31.05.22", 
 		"/dz_31-05-22/", 
 		Array(), 

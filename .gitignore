@@ -4,3 +4,6 @@
 /test
 *.zip
 *_
+/local/vendor/
+/local/composer.lock
+/LOCAL_FILES
