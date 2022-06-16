@@ -43,12 +43,67 @@ class ylab_import extends CModule
      */
     public function DoInstall()
     {
+        global $APPLICATION;
+        $request = Application::getInstance()->getContext()->getRequest();
+
         $this->installDB();
         $this->installFiles();
+
+        if (!isset($request['step'])) {
+            $APPLICATION->IncludeAdminFile(Loc::getMessage('YLAB_IMPORT_STEP_1'), $this->GetPath() . '/install/step1.php');
+        } elseif ($request['step'] == 2) {
+
+            $this->setOptions([
+                'limit_to_import',
+                'password',
+                'textarea',
+            ], $request->toArray());
+
+            $APPLICATION->IncludeAdminFile(Loc::getMessage('YLAB_IMPORT_STEP_2'), $this->GetPath() . '/install/step2.php');
+        } elseif ($request['step'] == 3) {
+
+            $this->setOptions([
+                'checkbox1',
+                'checkbox2',
+                'multiselectbox',
+                'selectbox',
+                'radio',
+                'product_color',
+                'custom_text',
+                'custom_datetime_local',
+                'custom_number',
+            ], $request->toArray());
+
+            $APPLICATION->IncludeAdminFile(Loc::getMessage('YLAB_IMPORT_STEP_3'), $this->GetPath() . '/install/step3.php');
+        }
+
+            $this->setOptions([
+                'note',
+                'statictext',
+                'statichtml',
+            ], $request->toArray());
 
         ModuleManager::registerModule($this->MODULE_ID);
 
         return true;
+    }
+
+
+    public function setOptions(array $white_list, array $input_list)
+    {
+        $white_list = array_flip($white_list);
+
+        foreach ($input_list as $key => $value){
+            if ($key == 'note'){
+                continue;
+            }
+            if (key_exists($key, $white_list)){
+                if (is_array($value)){
+                    $value = implode(',', $value);
+                }
+                COption::SetOptionString($this->MODULE_ID, $key, $value);
+            }
+        }
     }
 
 
@@ -138,8 +193,6 @@ class ylab_import extends CModule
             $oConn->executeSqlBatch($sQuery);
         }
 
-        COption::SetOptionString($this->MODULE_ID, "limit_to_import", '200');
-
         return true;
     }
 
@@ -162,6 +215,8 @@ class ylab_import extends CModule
             $oConn->executeSqlBatch($sQuery);
         }
 
+        COption::RemoveOption($this->MODULE_ID);
+
         return true;
     }
 
@@ -177,5 +232,19 @@ class ylab_import extends CModule
         }
 
         return dirname(__DIR__);
+    }
+
+
+    public function GetModuleRightList()
+    {
+        return [
+            'reference_id' => ['D', 'K', 'S', 'W'],
+            'reference' => [
+                '[D]' . Loc::getMessage('YLAB_IMPORT_ACCESS_CLOSED'),
+                '[K]' . Loc::getMessage('YLAB_IMPORT_ACCESS_TO_COMPONENTS'),
+                '[S]' . Loc::getMessage('YLAB_IMPORT_CHANGING_MODULE_SETTINGS'),
+                '[W]' . Loc::getMessage('YLAB_IMPORT_FULL_ACCESS'),
+            ]
+        ];
     }
 }
